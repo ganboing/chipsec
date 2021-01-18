@@ -448,7 +448,7 @@ Common (default) XML platform configuration file
       <field name="Enable" bit="0"  size="1" desc="Enable"/>
       <field name="Base"   bit="12" size="27" desc="GFX VTD Base Address"/>
     </register>
-    <register name="VTBAR" type="mmio" bar="MCHBAR" offset="0x5410" size="8" desc="VT-d MMIO Base Address">
+    <register name="VTBAR" type="fixed" value="0xfed90000" desc="VT-d MMIO Base Address">
       <field name="Enable" bit="0"  size="1"  desc="Enable"/>
       <field name="Base"   bit="12" size="27" desc="VTD Base Address"/>
     </register>

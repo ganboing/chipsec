@@ -242,12 +242,12 @@ class c_paging(c_paging_with_2nd_level_translation, c_translation):
             cfg.close()
         return
 
-    def read_pt_and_show_status(self, path, name, ptr):
+    def read_pt_and_show_status(self, path, name, ptr, **kwargs):
         #txt = open(path, 'w')
         try:
             if logger().HAL: logger().log( '[paging] reading {} page tables at 0x{:016X} ...'.format(name, ptr) )
             #self.out = txt
-            self.read_page_tables(ptr)
+            self.read_page_tables(ptr, skipl4=kwargs["skipl4"] if "skipl4" in kwargs else False)
             self.print_info('[paging] {} page tables'.format(name))
             #self.out = sys.stdout
             self.failure = False
@@ -262,7 +262,7 @@ class c_paging(c_paging_with_2nd_level_translation, c_translation):
         #    #txt.close()
         return
 
-    def read_page_tables(self, entry):
+    def read_page_tables(self, entry, **kwargs):
         raise Exception("Function needs to be implemented by child class")
 
 class c_4level_page_tables(c_paging):
@@ -302,7 +302,7 @@ class c_4level_page_tables(c_paging):
         logger().log(info)
         return
 
-    def read_page_tables(self, ptr):
+    def read_page_tables(self, ptr, skipl4=False):
         addr = ptr & ADDR_4KB
         self.pointer = addr
         self.pt = {addr: 'pml4'}
@@ -497,8 +497,8 @@ class c_extended_page_tables(c_4level_page_tables):
         MEM_DESC  = ['UC',  'WC',  '02',  '03',  'WT',  'WP',  'WB',  'UC-']
         return XWR_DESC[self.get_field(entry, self.XWR)] + ' ' + MEM_DESC[self.get_field(entry, self.MEM_TYPE)]
 
-    def read_pt_and_show_status(self, path, name, ptr):
-        super(c_extended_page_tables, self).read_pt_and_show_status(path, name, ptr)
+    def read_pt_and_show_status(self, path, name, ptr, **kwargs):
+        super(c_extended_page_tables, self).read_pt_and_show_status(path, name, ptr, **kwargs)
         self.check_misconfig(self.pt)
         return
 
@@ -533,6 +533,7 @@ class c_vtd_page_tables(c_extended_page_tables):
         # variables
         self.context = {}
         self.domains = {}
+        self.domains_aw = {}
         self.cpt     = {}
 
     def read_vtd_context(self, path, ptr):
@@ -584,6 +585,7 @@ class c_vtd_page_tables(c_extended_page_tables):
                 if self.get_field(cee_lo, self.CE_LO_T) in (0, 1):
                     slptptr = cee_lo & MAXPHYADDR
                     self.domains[slptptr] = 1
+                    self.domains_aw[slptptr] = self.get_field(cee_hi, self.CE_HI_AW)
         return
 
     def print_context_entry(self, source_id, cee):
@@ -602,12 +604,12 @@ class c_vtd_page_tables(c_extended_page_tables):
             logger().log('  {:02X}:{:02X}.{:X}  DID: {:02X}  AVAIL: {:X}  AW: {:X}  T: {:X}  FPD: {:X}  SLPTPTR: {:016X}'.format(*info))
         return
 
-    def read_page_tables(self, ptr):
-        logger().log('  Page Tables for domain 0x{:013X}: '.format(ptr))
-        super(c_vtd_page_tables, self).read_page_tables(ptr)
+    def read_page_tables(self, ptr, skipl4=False, **kwargs):
+        logger().log('  Page Tables for domain 0x{:013X} ({}-level): '.format(ptr, 3 if skipl4 else 4))
+        super(c_vtd_page_tables, self).read_page_tables(ptr, skipl4=skipl4, **kwargs)
         return
 
-    def read_pt_and_show_status(self, path, name, ptr):
-        super(c_vtd_page_tables, self).read_pt_and_show_status(path, name, ptr)
+    def read_pt_and_show_status(self, path, name, ptr, **kwargs):
+        super(c_vtd_page_tables, self).read_pt_and_show_status(path, name, ptr，**kwargs)
         self.check_misconfig(self.cpt)
         return
