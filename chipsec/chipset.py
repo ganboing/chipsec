@@ -56,6 +56,7 @@ class RegisterType:
     MSGBUS    = 'msgbus'
     MM_MSGBUS = 'mm_msgbus'
     MEMORY    = 'memory'
+    FIXED     = 'fixed'
 
 class Cfg:
     def __init__(self):
@@ -756,6 +757,8 @@ class Chipset:
                 reg_value= self.mem.read_physical_mem(int(reg['address'],16), int(reg['size'],16))
             elif reg['access'] == 'mmio':
                 reg_value = self.mmio.read_MMIO_reg(int(reg['address'],16), int(reg['offset'],16),int(reg['size'],16))
+        elif RegisterType.FIXED == rtype:
+            reg_value = int(reg['value'], 16)
         else:
             raise RegisterTypeNotFoundError("Register type not found: {}".format(rtype))
 
