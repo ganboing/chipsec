@@ -138,7 +138,12 @@ class IOMMU(hal_base.HALBase):
                 paging_vtd.read_vtd_context('vtd_context_{:08X}'.format(rtaddr_rta), rtaddr_rta)
                 self.logger.log( '[iommu] total VTd domains: {:d}'.format(len(paging_vtd.domains)))
                 for domain in paging_vtd.domains:
-                    paging_vtd.read_pt_and_show_status('vtd_{:08X}'.format(domain), 'VTd', domain)
+                    if paging_vtd.domains_aw[domain] == 1:
+                        paging_vtd.read_pt_and_show_status('vtd_{:08X}'.format(domain), 'VTd', domain, skipl4=True)
+                    elif paging_vtd.domains_aw[domain] == 2:
+                        paging_vtd.read_pt_and_show_status('vtd_{:08X}'.format(domain), 'VTd', domain, skipl4=False)
+                    else:
+                        raise IOMMUError ('IOMMUError: unknown Translation-Type: {}'.format(paging_vtd.domains_aw[domain]))
                     #if paging_vtd.failure: self.logger.error( "couldn't dump VT-d page tables" )    
             else:
                 self.logger.log( "[iommu] translation via VT-d engine '{}' is not enabled".format(iommu_engine) )

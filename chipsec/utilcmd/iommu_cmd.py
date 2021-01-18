@@ -85,7 +85,7 @@ class IOMMUCommand(BaseCommand):
             else:
                 _iommu_engines = iommu.IOMMU_ENGINES.keys()
 
-            if 'config' == op:
+            '''if 'config' == op:
 
                 try:
                     _acpi  = acpi.ACPI( self.cs )
@@ -97,7 +97,7 @@ class IOMMUCommand(BaseCommand):
                     self.logger.log( "[CHIPSEC] Dumping contents of DMAR ACPI table..\n" )
                     _acpi.dump_ACPI_table(acpi.ACPI_TABLE_SIG_DMAR)
                 else:
-                    self.logger.log( "[CHIPSEC] Couldn't find DMAR ACPI table\n" )
+                    self.logger.log( "[CHIPSEC] Couldn't find DMAR ACPI table\n" )'''
 
             for e in _iommu_engines:
                if   'config'  == op: _iommu.dump_IOMMU_configuration( e )
