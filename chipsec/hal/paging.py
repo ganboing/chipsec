@@ -533,6 +533,7 @@ class c_vtd_page_tables(c_extended_page_tables):
         # variables
         self.context = {}
         self.domains = {}
+        self.domains_aw = {}
         self.cpt     = {}
 
     def read_vtd_context(self, path, ptr):
@@ -584,6 +585,7 @@ class c_vtd_page_tables(c_extended_page_tables):
                 if self.get_field(cee_lo, self.CE_LO_T) in (0, 1):
                     slptptr = cee_lo & MAXPHYADDR
                     self.domains[slptptr] = 1
+                    self.domains_aw[slptptr] = self.get_field(cee_hi, self.CE_HI_AW)
         return
 
     def print_context_entry(self, source_id, cee):
@@ -607,7 +609,7 @@ class c_vtd_page_tables(c_extended_page_tables):
         super(c_vtd_page_tables, self).read_page_tables(ptr)
         return
 
-    def read_pt_and_show_status(self, path, name, ptr):
+    def read_pt_and_show_status(self, path, name, ptr, **kwargs):
         super(c_vtd_page_tables, self).read_pt_and_show_status(path, name, ptr)
         self.check_misconfig(self.cpt)
         return
